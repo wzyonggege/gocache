@@ -1,5 +1,7 @@
 # GO-CACHE
 
+key-value 缓存
+
 local cache + redis + db
 
 ## 解决问题
