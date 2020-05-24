@@ -1,28 +1,50 @@
 package gocache
 
-import "github.com/garyburd/redigo/redis"
+import (
+	"github.com/go-redis/redis/v7"
+	"time"
+)
 
-type RdsStore struct {
-	rds *redis.Pool
+type RedisStore struct {
+	pool *redis.Client
 }
 
-func NewRdsStore() (Store, error) {
-	r := &RdsStore{}
+func NewRedisStore() (Store, error) {
+	pool := redis.NewClient(&redis.Options{
+		Addr:     "",
+		Password: "", // no password set
+		DB:       0,       // use default DB
+	})
+	r := &RedisStore{
+		pool: pool,
+	}
 	return r, nil
 }
 
-func (s *RdsStore) Set(key string, value string) error {
-	panic("i")
+func (s *RedisStore) Set(key string, value string) error {
+	val := s.pool.Set(key, value, time.Second * 1000)
+	if err := val.Err(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (s *RdsStore) Get(key string) (string, error) {
-	panic("i")
+func (s *RedisStore) Get(key string) (string, error) {
+	val := s.pool.Get(key)
+	if err := val.Err(); err != nil {
+		return "", err
+	}
+	return val.String(), nil
 }
 
-func (s *RdsStore) Delete(key string) error {
-	panic("1")
+func (s *RedisStore) Delete(key string) error {
+	val := s.pool.Del(key)
+	if err := val.Err(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (s *RdsStore) Close() error {
-	panic("1")
+func (s *RedisStore) Close() error {
+	return s.pool.Close()
 }
